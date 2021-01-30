@@ -1,0 +1,13 @@
+.flex-center{
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.hr-line{
+  height: 1px;
+  width: 100%;
+  background-color: #d6d5d5;
+}
