@@ -1,10 +1,13 @@
+import $ from 'jquery';
 import 'date-fns';
 import React from 'react';
-import { Paper, TextField, Grid, Button, Container, Link, Typography, Fab, Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
+import { Paper, TextField, Grid, Button, Container, Link, Typography, Fab, Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress, Snackbar } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { withStyles } from '@material-ui/core/styles';
 import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
+import { Redirect } from "react-router-dom";
 import '../../css/login/login.css';
 import '../../css/common.css';
 
@@ -56,7 +59,23 @@ class Login extends React.Component{
     this.state = {
       is_scrollToVisible: true,
       is_signupDialogOpen: false,
-      signupBirthdate: null
+      signupDialogProgress: false,
+      loginProgressBar: false,
+      signupBirthdate: null,
+      signupFormErrors: {
+        signupFirstname: "",
+        signupLastname: "",
+        signupEmail: "",
+        signupPassword: "",
+        signupConfirmPassword: "",
+        signupDate: ""
+      },
+      signupFormErrorMessage: "",
+      loginFormErrorMessage:"",
+      snackBarSuccess: false,
+      snackBarMessage: "",
+      redirect:"",
+      homeState: {}
     }
     document.title = "Porest | Login or Signup";
     this.loginBoxRef = React.createRef()  
@@ -67,6 +86,7 @@ class Login extends React.Component{
     document.addEventListener("scroll", function(e) {
       that.toggleScrollToVisibility();
     });
+    localStorage.clear();
   }
 
   toggleScrollToVisibility() {
@@ -82,7 +102,15 @@ class Login extends React.Component{
   }
 
   handleCloseSignupDialog(){
-    this.setState({is_signupDialogOpen: false, signupBirthdate: null})
+    let errorFields = {
+      signupFirstname: "",
+      signupLastname: "",
+      signupEmail: "",
+      signupPassword: "",
+      signupConfirmPassword: "",
+      signupDate: ""
+    }
+    this.setState({is_signupDialogOpen: false, signupBirthdate: null, signupFormErrors: errorFields, signupFormErrorMessage: "", dialogProgress:false})
   }
 
   handleOpenSignupDialog(){
@@ -93,9 +121,135 @@ class Login extends React.Component{
     this.setState({signupBirthdate: date})
   }
 
+  handleSubmitSignup(e){
+    e.preventDefault();
+    const that = this;
+    const formData = new FormData(document.getElementById("signupForm"));
+    let isError = false;
+    let errorFields = {};
+    let errorState = {};
+
+    for(let pair of formData.entries()){
+      if(!pair[1]){
+        errorFields[pair[0]] = "This field is required.";
+        isError = true;
+      }else{
+        errorFields[`${pair[0]}`] = "";
+      }
+    }
+
+    let currDate = new Date();
+    let birthDate = new Date(formData.get("signupDate"));
+    
+    if(birthDate.getTime() > currDate.getTime()){
+      isError = true;
+      errorFields['signupDate'] = "You can't be from the future."
+    }else{
+      formData.set("signupDate", birthDate);
+    }
+
+    errorState['signupFormErrors'] = errorFields;
+
+    if(isError){
+      this.setState(errorState)
+    }else{
+      this.setState({signupDialogProgress:true})
+      $.ajax({
+        url:"signup",
+        data: formData,
+        type:"POST",
+        processData: false,
+        contentType:false,
+        success: function(response){
+          that.setState({signupDialogProgress:false})
+          if(response.result === "success"){
+            that.setState({snackBarSuccess: true, snackBarMessage:"Welcome to the Porest."})
+            that.handleCloseSignupDialog();
+          }else{
+            let errorFields = {};
+            let errorState = {};
+
+            if(response.error.emailFormatError){
+              errorFields['signupEmail'] = response.error.emailFormatError;
+            }
+
+            if(response.error.emailExistsError){
+              errorFields['signupEmail'] = response.error.emailExistsError;
+            }
+
+            if(response.error.cofirmPassError){
+              errorFields['signupConfirmPassword'] = response.error.cofirmPassError;
+            }
+
+            if(response.error.passwordLengthError){
+              errorFields['signupPassword'] = response.error.passwordLengthError;
+            }
+
+            errorState['signupFormErrors'] = errorFields;
+
+            that.setState(errorState);
+          }
+
+        },
+        error: function(xhr){
+          const errorMessage = xhr.responseJSON.status + " " + xhr.responseJSON.error;
+          that.setState({signupFormErrorMessage: errorMessage, dialogProgress:false});
+        }
+
+      })
+    }
+  }
+
+  handleSubmitLogin(e){
+    e.preventDefault();
+    const that = this;
+    const formData = new FormData(document.getElementById("loginForm"));
+
+    this.setState({loginProgressBar:true})
+    $.ajax({
+        url:"signin",
+        data: formData,
+        type:"POST",
+        processData: false,
+        contentType:false,
+        success: function(response){
+          if(response.result === "success"){
+            localStorage.setItem('token', response.user)
+            if(response.user.role === "ROLE_USER"){
+              that.setState({redirect: "/home", homeState:{
+                role: "user",
+                id : response.user.id
+              }})
+            }else{
+              that.setState({redirect: "/home", homeState:{
+                role: "creator",
+                id: 3
+              }})  
+            }
+            
+          }else{
+            localStorage.setItem('token',false)
+            that.setState({loginFormErrorMessage: response.error});
+          }
+
+          that.setState({loginProgressBar:false})
+        },
+        error: function(){
+          that.setState({loginProgressBar:false})
+          that.setState({loginFormErrorMessage: "Server cannot be reach."});
+        }
+    })
+  }
+  
+  
   render(){
     const { classes } = this.props;
-
+    if (this.state.redirect) {
+      return <Redirect to={{
+        pathname: this.state.redirect,
+        state: this.state.homeState
+      }} />
+    }
     return(
       <div className="login-wrapper">
         <div className="login-overlay">
@@ -120,12 +274,16 @@ class Login extends React.Component{
               <Grid ref={this.loginBoxRef} item xs={12} sm={6} style={{minHeight:"100vh"}}>
                 <div className="login-form flex-center">
                   <Paper className="p-4 mx-4">
-                    <form>
+                    <form id="loginForm" ref={(el) => this.loginForm = el} onSubmit={this.handleSubmitLogin.bind(this)}>
                       <Grid container spacing={2}>
+                        <Grid item xs={12} style={{display: this.state.loginFormErrorMessage ? "block" : "none"}}>
+                          <div className="alert alert-danger mb-0">{this.state.loginFormErrorMessage}</div>
+                        </Grid>
                         <Grid item xs={12}>
                           <TextField
                             className={classes.loginTextfield}
                             id="loginEmail"
+                            name="email"
                             variant="outlined"
                             label="Email"
                           />
@@ -134,6 +292,7 @@ class Login extends React.Component{
                           <TextField
                             className={classes.loginTextfield}
                             id="loginPassword"
+                            name="password"
                             type="password"
                             variant="outlined"
                             label="Password"
@@ -141,6 +300,8 @@ class Login extends React.Component{
                         </Grid>
                         <Grid item xs={12}>
                           <Button
+                            type="submit"
+                            form="loginForm"
                             className={classes.loginButton}
                             size="large" 
                             variant="contained" color="primary">
@@ -160,6 +321,9 @@ class Login extends React.Component{
                             Join Porest
                           </Button>
                         </Grid>
+                        <Grid item xs={12}>
+                          <LinearProgress style={{display: this.state.loginProgressBar ? "block":"none"}} />
+                        </Grid>
                       </Grid>
                     </form>
                   </Paper>
@@ -174,44 +338,64 @@ class Login extends React.Component{
         <Dialog open={this.state.is_signupDialogOpen} onClose={this.handleCloseSignupDialog.bind(this)} maxWidth="sm">
           <DialogTitle>Create New Account</DialogTitle>
           <DialogContent>
-            <form>
+            <form id="signupForm" ref={(el) => this.signupForm = el} onSubmit={this.handleSubmitSignup.bind(this)}>
               <Grid container spacing={2}>
+                <Grid item xs={12} style={{display: this.state.signupFormErrorMessage ? "block" : "none"}}>
+                  <div className="alert alert-danger">{this.state.signupFormErrorMessage}</div>
+                </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    error={this.state.signupFormErrors.signupFirstname}
+                    helperText={this.state.signupFormErrors.signupFirstname}
                     className={classes.loginTextfield}
                     id="signupFirstname"
+                    name="signupFirstname"
                     variant="outlined"
                     label="First Name"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    error={this.state.signupFormErrors.signupLastname}
+                    helperText={this.state.signupFormErrors.signupLastname}
                     className={classes.loginTextfield}
                     id="signupLastname"
+                    name="signupLastname"
                     variant="outlined"
                     label="Last Name"
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
+                    error={this.state.signupFormErrors.signupEmail}                  
+                    helperText={this.state.signupFormErrors.signupEmail}                  
                     className={classes.loginTextfield}
                     id="signupEmail"
+                    name="signupEmail"
                     variant="outlined"
                     label="Email"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    type="password"
+                    error={this.state.signupFormErrors.signupPassword}
+                    helperText={this.state.signupFormErrors.signupPassword}
                     className={classes.loginTextfield}
                     id="signupPassword"
+                    name="signupPassword"
                     variant="outlined"
                     label="Password"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
+                    type="password"
+                    error={this.state.signupFormErrors.signupConfirmPassword}
+                    helperText={this.state.signupFormErrors.signupConfirmPassword}
                     className={classes.loginTextfield}
                     id="signupConfirmPassword"
+                    name="signupConfirmPassword"
                     variant="outlined"
                     label="Confirm Password"
                   />
@@ -219,8 +403,11 @@ class Login extends React.Component{
                 <Grid item xs={12}>
                   <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
+                      error={this.state.signupFormErrors.signupDate}
+                      helperText={this.state.signupFormErrors.signupDate}
                       className={classes.loginTextfield}
                       id="signupDate"
+                      name="signupDate"
                       disableToolbar
                       variant="inline"
                       inputVariant="outlined"
@@ -237,12 +424,24 @@ class Login extends React.Component{
                 </Grid>
               </Grid>
             </form>
+
+             <LinearProgress className="mt-3" style={{display: this.state.signupDialogProgress ? "block":"none"}} />
           </DialogContent>
           <DialogActions>
-            <Button variant="contained" color="primary" onClick={this.handleCloseSignupDialog.bind(this)}>Confirm</Button>
+            <Button type="submit" form="signupForm" variant="contained" color="primary">Confirm</Button>
             <Button color="secondary" onClick={this.handleCloseSignupDialog.bind(this)}>Cancel</Button>
           </DialogActions>
         </Dialog>
+
+        <Snackbar
+          open={this.state.snackBarSuccess}
+          autoHideDuration={4000}
+          onClose={()=>{this.setState({snackBarSuccess:false})}}
+        >
+          <MuiAlert elevation={6} variant="filled" onClose={()=>{this.setState({snackBarSuccess:false})}} severity="success">
+            {this.state.snackBarMessage} 
+          </MuiAlert>
+        </Snackbar>
       </div>
     )
   }
