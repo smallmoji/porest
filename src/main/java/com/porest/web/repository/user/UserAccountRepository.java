@@ -1,4 +1,4 @@
-package com.porest.web.repository;
+package com.porest.web.repository.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

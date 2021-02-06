@@ -144,8 +144,6 @@ class Login extends React.Component{
     if(birthDate.getTime() > currDate.getTime()){
       isError = true;
       errorFields['signupDate'] = "You can't be from the future."
-    }else{
-      formData.set("signupDate", birthDate);
     }
 
     errorState['signupFormErrors'] = errorFields;
@@ -204,7 +202,6 @@ class Login extends React.Component{
     e.preventDefault();
     const that = this;
     const formData = new FormData(document.getElementById("loginForm"));
-
     this.setState({loginProgressBar:true})
     $.ajax({
         url:"signin",
@@ -408,8 +405,6 @@ class Login extends React.Component{
                       className={classes.loginTextfield}
                       id="signupDate"
                       name="signupDate"
-                      disableToolbar
-                      variant="inline"
                       inputVariant="outlined"
                       format="MM/dd/yyyy"
                       margin="normal"

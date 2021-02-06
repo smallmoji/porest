@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+.sidebar-profile-badge{
+  border-radius: 10rem;
+  padding: .5em .9em .5em .9em;
+  height: fit-content;
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  width:100%;
+  border: 0;
+  background-color: #fff;
+  transition: .2s;
+}
+
+.sidebar-profile-badge:hover{
+  background-color: rgb(31 204 18 / 16%);
+}
+
+.sidebar-profile-badge:focus {
+  outline: 0;
+}
+
+.sidebar-post-btn{
+  background: none;
+  background-color: #0bbd47;
+  font-size: 1.1rem;
+  border: 0;
+  color: #fff;
+  transition: .3s ease-out;
+  font-weight: bolder;
+  font-size: 1rem;
+}
+
+.sidebar-post-btn:disabled{
+  opacity: .5;
+}
+
+.sidebar-post-btn:hover{
+  background-color: #069c38;
+}
+
+.search-bar{
+  border: 0;
+  background-color: rgb(226, 225, 225);
+  width: 100%;
+  border-radius: 10rem;
+  padding: .5em .9em .5em .9em;
+}
+
+.search-bar input{
+  background: none;
+  border: 0;
+}
+
+.search-bar input:focus{
+  outline: none;
+}
+
+.avatar-initial {
+  display: block !important;
+  visibility: hidden;
+}
+
+.avatar-initial::first-letter {
+  visibility: visible;
+}
+
+.post-box{
+  width: 100%;
+}
+
+.post-input{
+  background:none;
+  width: 100%;
+  border: 0;
+  font-size: 1.2rem;
+  resize: none;
+  height:40px;
+  font-family: 'Roboto',
+  sans-serif;
+}
+
+.post-input:focus{
+  outline: 0;
+}
+
+.outline-button{
+  background: none;
+  border: 1px solid #069c38;
+  color: #069c38;
+  font-weight: bold;
+  font-size: .8rem;
+  transition: .3s ease-out;
+}
+
+.outline-button:hover{
+  background-color: #a3f1bd9b;
+}
+
+.outline-button:focus{
+  outline: 0;
+}
+
+.notif-badge{
+  background-color: red;
+  color: white;
+  font-size: .8rem;
+  padding: 0 5px;
+  border-radius: 1rem;
+  margin-left: 5px;
+}
+
+.explore-people-tab{
+  border: 1px solid #dee2e6;
+  margin-top: 20px;
+  border-radius: 1rem;
+  background-color: rgb(245 245 245);
+}
+
+  ::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    /* box-shadow: inset 0 0 5px rgb(38, 200, 23); */
+    border-radius: 10px;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: rgb(222 222 222 / 71%);
+    border-radius: 10px;
+  }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.porest.web.model.user.UserAccount;
-import com.porest.web.service.UserService;
+import com.porest.web.service.user.UserService;
 
 @RestController
 public class LoginController {
@@ -92,14 +93,15 @@ public class LoginController {
 			) throws ParseException{
 		HashMap<String,Object> resultMap = new HashMap<>();
 		UserAccount user = new UserAccount();
-		Date formattedDate = new SimpleDateFormat("EE MMM d y H:m:s 'GMT'Z (zz)").parse(birthdate);
+		SimpleDateFormat  formattedDate = new SimpleDateFormat("MM/dd/yyyy");
+		formattedDate.setTimeZone(TimeZone.getTimeZone("GMT"));
 		user.setFirstName(firstName);
 		user.setLastName(lastName);
 		user.setRole("ROLE_USER");
 		user.setIsEnabled(1);
 		user.setIsActive(1);
 		user.setPassword(password);
-		user.setBirthdate(formattedDate);
+		user.setBirthdate(formattedDate.parse(birthdate));
 		return userService.createUser(user, email, confirmPassword);
 	}
 }

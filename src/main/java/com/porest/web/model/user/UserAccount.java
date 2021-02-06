@@ -1,21 +1,27 @@
 package com.porest.web.model.user;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.validation.constraints.Email;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.porest.web.model.AuditModel;
 import com.porest.web.model.user.UserProfile;
 
 @Entity
-public class UserAccount extends AuditModel {
+@JsonIgnoreProperties("userProfile")
+public class UserAccount extends AuditModel implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -40,8 +46,10 @@ public class UserAccount extends AuditModel {
 	
 	private int isActive;
 	
-	@OneToOne( mappedBy = "userAccout", orphanRemoval = true, cascade = CascadeType.ALL)
+	@PrimaryKeyJoinColumn
+	@OneToOne(fetch = FetchType.LAZY,cascade=CascadeType.ALL, mappedBy = "userAccount")
 	private UserProfile userProfile;
+
 	
 	public UserAccount() {}
 

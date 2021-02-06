@@ -5,10 +5,12 @@
   "proxy": "http://localhost:8080",
   "homepage": "/login",
   "dependencies": {
+    "autosize": "latest",
 	  "@date-io/date-fns": "^1.x",
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/pickers": "^3.2.10",
+    "@material-ui/lab": "^4.0.0-alpha.18",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
