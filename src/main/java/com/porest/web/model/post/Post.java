@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
@@ -19,14 +20,12 @@ public class Post extends AuditModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String title;
-	
 	private String content;
 	
 	@ManyToOne
 	private UserProfile userProfile;
 	
-	@OneToMany
+	@ManyToMany(mappedBy = "likedPosts")
 	private Collection<UserProfile> likes;
 	
 //	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
@@ -38,14 +37,6 @@ public class Post extends AuditModel {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
 	}
 
 	public String getContent() {

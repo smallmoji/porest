@@ -41,6 +41,10 @@
   background-color: #069c38;
 }
 
+.sidebar-post-btn:focus{
+  outline: 0;
+}
+
 .search-bar{
   border: 0;
   background-color: rgb(226, 225, 225);
@@ -133,4 +137,22 @@
   ::-webkit-scrollbar-thumb {
     background: rgb(222 222 222 / 71%);
     border-radius: 10px;
+  }
+
+  .comment-box{
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+  }
+
+  .comment-box textarea{
+    width: 100%;
+    border: none;
+    background: none;
+    margin: 0 10px;
+    resize: none;
+  }
+
+  .comment-box textarea:focus{
+    outline: 0;
   }

@@ -12,6 +12,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapsId;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -40,6 +42,10 @@ public class UserProfile implements Serializable {
 	    
 	@OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL)
 	private Collection<Post> posts;
+	
+	@ManyToMany
+	@JoinTable
+	private Collection<Post> likedPosts;
 	
 	
 	public UserProfile() {

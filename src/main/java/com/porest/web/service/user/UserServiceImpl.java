@@ -104,6 +104,9 @@ public class UserServiceImpl implements UserService {
 					this.deleteFriendship(item.getId());
 				}
 				
+				user.get().getUserProfile().getFriendRequests().clear();
+				user.get().getUserProfile().getFriendRequests().clear();
+				
 				userAccountRepo.delete(user.get());
 				resultMap.put("result", "success");
 
@@ -337,10 +340,19 @@ public class UserServiceImpl implements UserService {
 					tempMap.put("friendshipId", item.getId());
 					
 					if(item.isActive()) {
-						tempMap.put("user",item.getRequester().getUserAccount());
+						if(item.getRequester().equals(user)) {
+							tempMap.put("user",item.getFriend().getUserAccount());
+						}else {
+							tempMap.put("user",item.getRequester().getUserAccount());
+						}
+						
 						friendList.add(tempMap);
 					}else {
-						tempMap.put("user",item.getRequester().getUserAccount());
+						if(item.getRequester().equals(user)) {
+							tempMap.put("user",item.getFriend().getUserAccount());
+						}else {
+							tempMap.put("user",item.getRequester().getUserAccount());
+						}
 						friendRequestList.add(tempMap);
 					}
 				}
