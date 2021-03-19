@@ -81,6 +81,7 @@ class FriendsTab extends React.Component{
         if(response.result === "success"){
           that.getSuggestedUsers();
           that.setState({snackBarSuccess: true, snackBarMessage:"Friend Request sent."})
+          that.props.resetSuggested();
         }
       }
     })
@@ -96,6 +97,7 @@ class FriendsTab extends React.Component{
       success: function(response){
         if(response.result === "success"){
           that.getSuggestedUsers();
+          that.props.resetSuggested();
           that.setState({snackBarSuccess: true, snackBarMessage:"Unfriended succesfully."})
         }
       }
@@ -158,30 +160,36 @@ class FriendsTab extends React.Component{
     return(
       <div>
         {this.state.haveFriends ? 
-        <List className="p-0">
-          {this.state.suggestedUsers.map(item =>{
-            if(item.friendship === "friends"){
-              return <ListItem className={classes.listItem} key={item.key}>
-                <ListItemAvatar>
-                  <Avatar></Avatar>
-                </ListItemAvatar>
-                <div className="d-flex justify-content-between w-100">
-                  <div>
-                    <Typography variant="subtitle2" color="inherit" style={{fontWeight:"bolder"}}>
-                      {item.user.firstName} {item.user.lastName}
-                    </Typography>
-                    <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                      {item.user.email}
-                    </Typography>
-                  </div>
-                  <div>
-                    <button className="badge-pill outline-button p-2" onClick={() => {this.handleUnfriend(item.friendshipId)}}>Unfriend</button>
-                  </div>
-                </div>
-              </ListItem>
-              }
-          })}
-        </List>
+          <div>
+            <List className="p-0">
+              {this.state.suggestedUsers.map(item =>{
+                if(item.friendship === "friends"){
+                  return <ListItem className={classes.listItem} key={item.key}>
+                    <ListItemAvatar>
+                      <Avatar></Avatar>
+                    </ListItemAvatar>
+                    <div className="d-flex justify-content-between w-100">
+                      <div>
+                        <Typography variant="subtitle2" color="inherit" style={{fontWeight:"bolder"}}>
+                          {item.user.firstName} {item.user.lastName}
+                        </Typography>
+                        <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
+                          {item.user.email}
+                        </Typography>
+                      </div>
+                      <div>
+                        <button className="badge-pill outline-button p-2" onClick={() => {this.handleUnfriend(item.friendshipId)}}>Unfriend</button>
+                      </div>
+                    </div>
+                  </ListItem>
+                  }
+              })}
+            </List>
+
+            <div className="p-4">
+              Check out some <Link onClick={() => {this.setState({suggestedTab: true})}} style={{cursor:"pointer"}}>people</Link> and find friends!
+            </div>
+          </div>
         : 
           <div className="p-4">
             Feels lonely in here. Check out some <Link onClick={() => {this.setState({suggestedTab: true})}} style={{cursor:"pointer"}}>people</Link> and find friends!

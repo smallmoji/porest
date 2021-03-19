@@ -67,7 +67,7 @@ class NotificationsTab extends React.Component{
         if(response.result === "success"){
           that.setState({snackBarSuccess: true, snackBarMessage:"Friend Request Accepted!"})
           that.getFriendRequests();
-          // that.props.resetNotifBadge(that.state.userId);
+          that.props.resetNotifBadge(that.state.userId);
         }
       }
     })

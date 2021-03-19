@@ -5,11 +5,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -24,7 +21,12 @@ import com.porest.web.model.post.Post;
 @Entity
 @JsonIgnoreProperties({"userAccount"})
 public class UserProfile implements Serializable {
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
     private Long id;
     
 	@MapsId
@@ -43,9 +45,9 @@ public class UserProfile implements Serializable {
 	@OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL)
 	private Collection<Post> posts;
 	
-	@ManyToMany
+	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable
-	private Collection<Post> likedPosts;
+	private Set<Post> likedPosts;
 	
 	
 	public UserProfile() {
@@ -99,6 +101,14 @@ public class UserProfile implements Serializable {
 	public void removePost(Post post) {
 		posts.remove(post);
 		post.setUserProfile(null);
+	}
+	
+	public void addLikedPost(Post post) {
+		likedPosts.add(post);
+	}
+	
+	public void removeLikedPosts(Post post) {
+		likedPosts.remove(post);
 	}
 	
 }

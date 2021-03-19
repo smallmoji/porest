@@ -1,6 +1,7 @@
 package com.porest.web.model.post;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -9,13 +10,17 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import com.porest.web.model.AuditModel;
 import com.porest.web.model.user.UserProfile;
 
 @Entity
 public class Post extends AuditModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -25,8 +30,8 @@ public class Post extends AuditModel {
 	@ManyToOne
 	private UserProfile userProfile;
 	
-	@ManyToMany(mappedBy = "likedPosts")
-	private Collection<UserProfile> likes;
+	@ManyToMany(mappedBy = "likedPosts", cascade = CascadeType.ALL)
+	private Set<UserProfile> likes;
 	
 //	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
 //	private Collection<PostComment> comments;
@@ -59,7 +64,7 @@ public class Post extends AuditModel {
 		return likes;
 	}
 
-	public void setLikes(Collection<UserProfile> likes) {
+	public void setLikes(Set<UserProfile> likes) {
 		this.likes = likes;
 	}
 	

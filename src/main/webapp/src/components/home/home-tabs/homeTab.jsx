@@ -1,6 +1,6 @@
 import React from 'react';
 import $ from 'jquery';
-import { Button, Avatar, CardActions, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize } from '@material-ui/core';
+import { Button, Avatar, CardActions, Card, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize,List,ListItem } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import { muiIcon } from '../../../js/icons';
 import { withStyles } from '@material-ui/core/styles';
@@ -22,30 +22,36 @@ const style = theme => ({
       color: "red"
     },
     '& .MuiIconButton-root':{
-      padding: '7px'
+      padding: '7px',
     }
   },
   commentIcon : {
+    marginLeft: "20%",
     '& button:hover': {
       backgroundColor: "rgb(75 126 255 / 22%)",
       color: "blue"
     },
     '& .MuiIconButton-root':{
-      padding: '7px'
+      padding: '7px',
     }
   },
   shareIcon : {
+    marginLeft: "20%",
     '& button:hover': {
       backgroundColor: "rgb(21 255 0 / 29%)",
       color: "green"
     },
     '& .MuiIconButton-root':{
-      padding: '7px'
+      padding: '7px',
     }
   },
   userPostsGroup: {
-    '& .MuiCardActions-spacing > :not(:first-child)' : {
-      marginLeft: "20px"
+    // '& .MuiCardActions-spacing > :not(:first-child)' : {
+    //   marginleft: "20%"
+    // },
+    paddingLeft: 0,
+    '& span': {
+      fontSize: ".8rem"
     }
   }
   
@@ -164,54 +170,89 @@ class HomeTab extends React.Component{
 
         {this.state.posts.map( posts => {
           return <div key={posts.key} className="border-bottom bg-white">
-            <CardHeader
-              avatar={
-                <Avatar aria-label="recipe">
-                </Avatar>
-              }
-              action={
-                <IconButton aria-label="settings">
-                  {muiIcon('moreVertical')}
-                </IconButton>
-              }
-              title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-2 text-mute">{posts.email}</span></div>}
-              subheader={posts.createdAt}
-            />
-            <CardContent>
-              <Typography variant="body2" color="inherit" component="p">
-                {posts.content}
-              </Typography>
-            </CardContent>
-            <CardActions className={classes.userPostsGroup}>
-              <div className={classes.heartIcon}>
-                <IconButton onClick={()=>{this.handleLikePost(posts.id)}}>
-                  {posts.isLiked ? muiIcon('filledHeartIcon') : muiIcon('heartIcon') }
-                </IconButton>
-                <span>{posts.likes}</span>
+            <div className="d-flex w-100">
+              <div className="d-flex justify-content-center pt-3 pl-3 pr-2">
+                <Avatar color="primary" aria-label="recipe"></Avatar>
               </div>
-              <div className={classes.commentIcon}>
-                <IconButton onClick={()=>{this.handleOpenComments(posts.id)}}>
-                  {muiIcon('commentIcon')}
-                </IconButton>
-                <span>560</span>
+              <div className="w-100 pt-3 ml-2">
+                <CardHeader
+                  className="p-0"
+                  disableTypography
+                  action={
+                    <IconButton className="p-0 mr-3" aria-label="settings">
+                      {muiIcon('moreVertical')}
+                    </IconButton>
+                  }
+                  title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@name_here <b>·</b> {posts.createdAt}</span></div>}
+                />
+                <CardContent className="p-0 pr-5 mt-1">
+                  <Typography variant="body2" color="inherit" component="p">
+                    {posts.content}
+                  </Typography>
+                </CardContent>
+                <CardActions className={classes.userPostsGroup}>
+                  <div className={classes.heartIcon}>
+                    <IconButton onClick={()=>{this.handleLikePost(posts.id)}}>
+                      {posts.isLiked ? muiIcon('filledHeartIcon') : muiIcon('heartIcon') }
+                    </IconButton>
+                    <span>{posts.likes}</span>
+                  </div>
+                  <div className={classes.commentIcon}>
+                    <IconButton onClick={()=>{this.handleOpenComments(posts.id)}}>
+                      {muiIcon('commentIcon')}
+                    </IconButton>
+                    <span>560</span>
+                  </div>
+                  <div className={classes.shareIcon}>
+                    <IconButton>
+                      {muiIcon('shareIcon')}
+                    </IconButton>
+                    <span>390</span>
+                  </div>
+                </CardActions>
               </div>
-              <div className={classes.shareIcon}>
-                <IconButton>
-                  {muiIcon('shareIcon')}
-                </IconButton>
-                <span>390</span>
-              </div>
-            </CardActions>
-
+            </div>
             <Collapse className="border-top" in={posts.id == this.state.postCommentId}>
               <div className="comment-box">
                 <Avatar/>
                 <TextareaAutosize placeholder="Write comment..." />
-                <Button variant="contained" size="small" color="primary">Comment</Button>
+                <button className="comments-button p-2 rounded">Comment</button>
               </div>
-              
+              <div className="comment-section">
+                <List>
+                  <ListItem>
+                    <CardHeader className="py-0 px-2 w-100"
+                      avatar={
+                        <Avatar color="primary" aria-label="recipe">
+                        </Avatar>
+                      }
+                      action={
+                        <IconButton aria-label="settings">
+                          {muiIcon('moreVertical')}
+                        </IconButton>
+                      }
+                      title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-2 text-mute">Yo wtf is this shit.</span></div>}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <CardHeader className="py-0 px-2 w-100"
+                      avatar={
+                        <Avatar color="primary" aria-label="recipe">
+                        </Avatar>
+                      }
+                      action={
+                        <IconButton aria-label="settings">
+                          {muiIcon('moreVertical')}
+                        </IconButton>
+                      }
+                      title={<div><b>Jayson De Los Reyes</b><span className="ml-2 text-mute">Multiple people like posts is working nice</span></div>}
+                    />
+                  </ListItem>
+                </List>
+              </div>
             </Collapse>
           </div>
+
           })}
 
         <Snackbar

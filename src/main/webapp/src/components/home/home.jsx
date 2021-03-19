@@ -8,6 +8,8 @@ import {ReactComponent as PorestLogo} from '../../misc/logo/logo_green.svg';
 import HomeTab from './home-tabs/homeTab';
 import FriendsTab from './home-tabs/friendsTab';
 import NotificationsTab from './home-tabs/notificationsTab';
+import ProfileTab from './home-tabs/profileTab';
+import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 
 import '../../css/home/home.css';
@@ -18,6 +20,7 @@ const style = theme => ({
     boxShadow: "none",
     borderBottom: "1px solid #dee2e6",
     backgroundColor:"#fff",
+    hasSuggested: false
   },
   sidebarTab: {
     '& button:focus': {
@@ -56,10 +59,12 @@ const style = theme => ({
       color:"#000",
       width:"30px",
       height:"30px",
-      marginRight:"20px"
     },
     '& .MuiTabs-indicator' : {
       display:"none"
+    },
+    '& .MuiBadge-root' : {
+      marginRight: "20px"
     }
   },
   bottomNav : {
@@ -96,7 +101,7 @@ class Home extends React.Component{
       isSuggestedTab: false
     }
 
-    document.title = "Porest | Home";
+    document.title = "Home | Porest";
   }
 
   componentDidMount(){
@@ -130,9 +135,14 @@ class Home extends React.Component{
         userId: this.state.id
       },
       success: function(response){
-        console.log(response)
         if(response.result === "success"){
-          that.setState({suggestedUsers: response.otherUsers})
+          that.setState({suggestedUsers: response.otherUsers, hasSuggested: false})
+          for(let user of response.otherUsers){
+            if(user.friendship === "not friends"){
+              that.setState({hasSuggested: true});
+              break;
+            }
+          }
         }
       }
     })
@@ -165,7 +175,6 @@ class Home extends React.Component{
 
   handleBottomnavChange(e,newValue){
     let pageText = e.target;
-    console.log(pageText);
     this.setState({currTabpanel: newValue});
   }
 
@@ -197,9 +206,12 @@ class Home extends React.Component{
         userId: userId
       },
       success: function(response){
-        console.log("called? " + userId);
         that.setState({requestsCount: response.requestsCount})
-       
+        if(response.requestsCount > 0){
+          document.title = "(" + response.requestsCount + ") Home | Porest";
+        }else{
+          document.title = "Home | Porest";
+        }
       }
     })
   }
@@ -220,9 +232,9 @@ class Home extends React.Component{
     })
   }
 
-
   render(){
     const { classes } = this.props;
+
     return(
       <div className="bg-white">
         <Grid container style={{height:"100vh"}}>
@@ -237,11 +249,11 @@ class Home extends React.Component{
                     onChange={this.handleSidebarChange.bind(this)}
                   >
                     <Tab value={0} label={<div><PorestLogo style={{height:"30px", width:"30px",marginLeft:"3px"}}/></div>} />
-                    <Tab value={0} label={<div className="d-flex align-items-center">{muiIcon('homeIcon')} Home</div>} />
-                    <Tab value={1} label={<div className="d-flex align-items-center">{muiIcon('personIcon')} Profile</div>} />
-                    <Tab value={2} label={<div className="d-flex align-items-center">{muiIcon('friendsIcon')} Friends</div>} />
-                    <Tab value={3} label={<div className="d-flex align-items-center">{muiIcon('mailIcon')} Messages</div>} />
-                    <Tab value={4} label={<div className="d-flex align-items-center">{muiIcon('notifIcon')} Notifications </div>} />
+                    <Tab value={0} label={<div className="d-flex align-items-center"><Badge>{muiIcon('homeIcon')}</Badge> Home</div>} />
+                    <Tab value={1} label={<div className="d-flex align-items-center"><Badge>{muiIcon('personIcon')}</Badge> Profile</div>} />
+                    <Tab value={2} label={<div className="d-flex align-items-center"><Badge>{muiIcon('friendsIcon')}</Badge> Friends</div>} />
+                    <Tab value={3} label={<div className="d-flex align-items-center"><Badge>{muiIcon('mailIcon')}</Badge> Messages</div>} />
+                    <Tab value={4} label={<div className="d-flex align-items-center"><Badge badgeContent={this.state.requestsCount} color="error">{muiIcon('notifIcon')}</Badge> Notifications </div>} />
                   </Tabs>
 
                   <button className="sidebar-post-btn badge-pill mt-2 py-2 w-100">Post</button>
@@ -290,55 +302,79 @@ class Home extends React.Component{
               <HomeTab userId={this.state.id}/>
             </TabPanel>
             <TabPanel value={this.state.currTabpanel} index={1}>
-              PROFILE
+              <ProfileTab/>
             </TabPanel>
             <TabPanel value={this.state.currTabpanel} index={2}>
-              <FriendsTab userId={this.state.id} isSuggested={this.state.isSuggestedTab} />
+              <FriendsTab userId={this.state.id} resetSuggested={this.getSuggestedUsers.bind(this)} isSuggested={this.state.isSuggestedTab} />
             </TabPanel>
             <TabPanel value={this.state.currTabpanel} index={3}>
               MESSAGES CONTENT
             </TabPanel>
             <TabPanel value={this.state.currTabpanel} index={4}>
-              <NotificationsTab userId={this.state.id} resetNotifBadge={this.getFriendships}/>
+              <NotificationsTab userId={this.state.id} resetNotifBadge={this.getFriendships.bind(this)}/>
             </TabPanel>
           </Grid>
 
           <Grid item xs={12} sm={3} md={3} className="d-none d-lg-block">
-            <div className="connections-bar border-left h-100 pt-2 px-3 position-relative">
+            <div className="connections-bar border-left pt-2 px-3 position-relative">
               <div className="search-bar border">
                 {muiIcon('searchIcon')}
                 <input className="ml-2" type="text" placeholder="Search Porest"/>
               </div>
 
-              <div className="explore-people-tab">
-                <div className="p-3 font-weight-bold border-bottom">Suggested People</div>
-                <List>
-                  {this.state.suggestedUsers.map(item =>{
-                    if(item.friendship === "not friends"){
-                      return <ListItem button className={classes.listItem} key={item.key}>
-                        <ListItemAvatar>
-                          <Avatar></Avatar>
-                        </ListItemAvatar>
-                        <div className="d-flex justify-content-between w-100">
-                          <div>
-                            <Typography variant="subtitle2" color="inherit" style={{fontWeight:"bolder"}}>
-                              {item.user.firstName} {item.user.lastName}
-                            </Typography>
-                            <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                              {item.user.email}
-                            </Typography>
-                          </div>
-                        </div>
-                      </ListItem>
-                      }
-                  })}
-                </List>
-                 <div className="border-top p-3"><Link onClick={()=>{
-                   this.setState({currTabpanel: 2, mainTitle:"Friends", isSuggestedTab:true });
-                 }}>Show More</Link></div>
+              <div className="right-side-bar-tab">         
+                <div className="explore-people-tab">
+                  <div className="p-3 font-weight-bold border-bottom">
+                    Trending
+                  </div>
+                  <List>
+                    <ListItem button divider className="d-block">
+                      Jolliwood Star Edgardo quotes "I'm proud to be gay" <Link >#pride</Link>
+                    </ListItem>
+                    <ListItem button divider>
+                      Dildos and Honey CEO John Christopher Tobias resigns after toxic dildos backlash.
+                    </ListItem>
+                    <ListItem button divider className="d-block">
+                      Batang Hamog star Joshua Villas quits the show after 10 years. <Link>#Hamogago</Link>
+                    </ListItem>
+                  </List>
+                  <div className="p-3">
+                    <Link>Show More</Link>
+                  </div>
+                </div>
+                {this.state.hasSuggested &&
+                  <div className="explore-people-tab">
+                    <div className="p-3 font-weight-bold border-bottom">Suggested People</div>
+                    <List>
+                      {this.state.suggestedUsers.map(item =>{
+                        if(item.friendship === "not friends"){
+                          return <ListItem button className={classes.listItem} key={item.key}>
+                            <ListItemAvatar>
+                              <Avatar></Avatar>
+                            </ListItemAvatar>
+                            <div className="d-flex justify-content-between w-100">
+                              <div>
+                                <Typography variant="subtitle2" color="inherit" style={{fontWeight:"bolder"}}>
+                                  {item.user.firstName} {item.user.lastName}
+                                </Typography>
+                                <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
+                                  {item.user.email}
+                                </Typography>
+                              </div>
+                            </div>
+                          </ListItem>
+                          }
+                      })}
+                    </List>
+                    <div className="border-top p-3"><Link onClick={()=>{
+                      this.setState({currTabpanel: 2, mainTitle:"Friends", isSuggestedTab:true });
+                    }}>Show More</Link></div>
+                  </div>
+                }
+
               </div>
 
-              <div className="position-absolute p-3" style={{bottom:0,fontSize:".8rem"}}>
+              <div className="p-3" style={{bottom:0,fontSize:".8rem"}}>
                 <Grid container spacing={1}>
                   <Grid item><Link>Terms of Service</Link></Grid>
                   <Grid item><Link>Privacy Policy</Link></Grid>

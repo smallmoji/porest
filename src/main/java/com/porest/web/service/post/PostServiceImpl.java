@@ -2,6 +2,8 @@ package com.porest.web.service.post;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -105,14 +107,32 @@ public class PostServiceImpl implements PostService {
 			
 			List<Post> posts = postRepo.findByUserProfileInOrderByCreatedAtDesc(relatedUsers);
 			List<Object> cleanPosts = new ArrayList<>();
-			DateFormat formatDate = new SimpleDateFormat("MMMM dd, yyyy");
 			
 			for(Post post : posts) {
 				HashMap<String, Object> tempMap = new HashMap<>();
 				tempMap.put("id", post.getId());
 				tempMap.put("content", post.getContent());
-				String date = formatDate.format(post.getCreatedAt());
-				tempMap.put("createdAt", date);
+				
+				String dateToshow = "";
+				LocalDateTime currDate = LocalDateTime.now();
+				LocalDateTime postDate = post.getCreatedAt();
+				
+				if(postDate.toLocalDate().equals(currDate.toLocalDate())) {
+					if(postDate.getHour() == currDate.getHour()) {
+						if(postDate.getMinute() == currDate.getMinute()) {
+							dateToshow = "Just Now";
+						}else {
+							dateToshow = (currDate.getMinute() - postDate.getMinute()) + "m";
+						}
+					}else {
+						dateToshow = (currDate.getHour() - postDate.getHour()) + "h";
+					}
+				}else {
+					dateToshow = postDate.getMonth().toString().substring(0,1) + 
+							postDate.getMonth().toString().substring(1,3).toLowerCase() + " " + postDate.getDayOfMonth();
+				}
+				
+				tempMap.put("createdAt", dateToshow);
 				tempMap.put("firstName", post.getUserProfile().getUserAccount().getFirstName());
 				tempMap.put("lastName", post.getUserProfile().getUserAccount().getLastName());
 				tempMap.put("email", post.getUserProfile().getUserAccount().getEmail());
@@ -171,15 +191,19 @@ public class PostServiceImpl implements PostService {
 			UserProfile user = userAccountRepo.findById(userId).get().getUserProfile();
 			
 			if(post.getLikes().contains(user)) {
-				post.getLikes().remove(user);
+				post.removeLike(user);
+				user.removeLikedPosts(post);
+				userProfileRepo.save(user);
 				postRepo.save(post);
 				resultMap.put("result", "success");
-				resultMap.put("desc", "post is unliked.");
+				resultMap.put("action", "post is unliked.");
 			}else {
-				post.getLikes().add(user);
+				post.addLike(user);
+				user.addLikedPost(post);
+				userProfileRepo.save(user);
 				postRepo.save(post);
 				resultMap.put("result", "success");
-				resultMap.put("desc", "post is liked");
+				resultMap.put("action", "post is liked");
 			}
 			
 		} catch (Exception e) {
