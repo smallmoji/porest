@@ -34,6 +34,8 @@ public class UserProfile implements Serializable {
     @JoinColumn(name="id")
 	private UserAccount userAccount;
 	
+	private String displayName;
+	
 	private String about;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "requester", cascade = CascadeType.ALL)
@@ -109,6 +111,14 @@ public class UserProfile implements Serializable {
 	
 	public void removeLikedPosts(Post post) {
 		likedPosts.remove(post);
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 	
 }

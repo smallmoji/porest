@@ -1,9 +1,6 @@
 package com.porest.web.service.post;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +10,8 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.porest.web.model.post.Post;
 import com.porest.web.model.user.Friendship;
@@ -20,6 +19,7 @@ import com.porest.web.model.user.UserProfile;
 import com.porest.web.repository.post.PostRepository;
 import com.porest.web.repository.user.UserAccountRepository;
 import com.porest.web.repository.user.UserProfileRepository;
+import com.porest.web.utils.FileUploadUtil;
 
 @Component
 public class PostServiceImpl implements PostService {
@@ -31,13 +31,24 @@ public class PostServiceImpl implements PostService {
 	PostRepository postRepo;
 	
 	
-	public HashMap<String, Object> createPost(Long userId, Post post){
+	public HashMap<String, Object> createPost(Long userId, Post post, MultipartFile file){
 		HashMap<String, Object> resultMap = new HashMap<>();
 		try {
 			UserProfile user = userAccountRepo.findById(userId).get().getUserProfile();
+			String fileName = "POST_";
 			post.setUserProfile(user);
 			
+			if(file != null && !file.isEmpty()) {
+				fileName += StringUtils.cleanPath(file.getOriginalFilename());
+				post.setImagePath(fileName);
+				
+			}
+			
 			Post createdPost = postRepo.save(post);
+			if(createdPost.getImagePath() != null) {
+				String uploadDir = "src/main/webapp/public/media/POSTS/" + createdPost.getUserProfile().getUserAccount().getId();
+				FileUploadUtil.saveFile(uploadDir, fileName, file);
+			}
 			
 			user.addPost(createdPost);
 			userProfileRepo.save(user);
@@ -60,6 +71,7 @@ public class PostServiceImpl implements PostService {
 				HashMap<String, Object> tempMap = new HashMap<>();
 				tempMap.put("id", post.getId());
 				tempMap.put("content", post.getContent());
+				tempMap.put("imagePath", post.getImagePath());
 				tempMap.put("user", post.getUserProfile().getUserAccount());
 				
 				clearPosts.add(tempMap);
@@ -137,6 +149,8 @@ public class PostServiceImpl implements PostService {
 				tempMap.put("lastName", post.getUserProfile().getUserAccount().getLastName());
 				tempMap.put("email", post.getUserProfile().getUserAccount().getEmail());
 				tempMap.put("likes", post.getLikes().size());
+				tempMap.put("imagePath", post.getImagePath());
+				tempMap.put("userId", post.getUserProfile().getUserAccount().getId());
 				if(post.getLikes().contains(user)) {
 					tempMap.put("isLiked", true);
 				}else {

@@ -27,6 +27,8 @@ public class Post extends AuditModel {
 	
 	private String content;
 	
+	private String imagePath;
+	
 	@ManyToOne
 	private UserProfile userProfile;
 	
@@ -74,6 +76,14 @@ public class Post extends AuditModel {
 	
 	public void removeLike(UserProfile user) {
 		likes.remove(user);
+	}
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
 	}
 	
 	

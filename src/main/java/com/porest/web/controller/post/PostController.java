@@ -1,12 +1,12 @@
 package com.porest.web.controller.post;
 
 import java.util.HashMap;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.porest.web.model.post.Post;
 import com.porest.web.service.post.PostService;
@@ -19,10 +19,11 @@ public class PostController {
 	@RequestMapping("createPost")
 	public HashMap<String, Object> createPost(
 			@RequestParam("userId")long userId,
-			@RequestParam("content")String content){
+			@RequestParam("content")String content,
+			@RequestParam(name = "image", required = false)MultipartFile file){
 		Post post = new Post();
 		post.setContent(content);
-		return postService.createPost(userId, post);
+		return postService.createPost(userId, post, file);
 	}
 	
 	@RequestMapping("getPosts")

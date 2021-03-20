@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.porest.web.model.user.Friendship;
 import com.porest.web.model.user.UserAccount;
@@ -63,7 +64,10 @@ public class UserServiceImpl implements UserService {
 				
 				try {
 					profile.setUserAccount(user);
+					String displayName = StringUtils.trimAllWhitespace(user.getFirstName().toLowerCase());
+					profile.setDisplayName(displayName);
 					user.setUserProfile(profile);
+				
 					userAccountRepo.save(user);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -144,8 +148,14 @@ public class UserServiceImpl implements UserService {
 		try {
 			Optional<UserAccount> user = userAccountRepo.findById(id);
 			if(!user.isEmpty()) {
+				UserProfile userProf = user.get().getUserProfile();
+				HashMap<String,Object> profileMap = new HashMap<>();
+				profileMap.put("displayName", userProf.getDisplayName());
+				profileMap.put("about", userProf.getAbout());
+				
 				resultMap.put("result", "success");
 				resultMap.put("user",user);
+				resultMap.put("profile", profileMap);
 			}else {
 				resultMap.put("result", "failed");
 				resultMap.put("error", "User doesn't exist");

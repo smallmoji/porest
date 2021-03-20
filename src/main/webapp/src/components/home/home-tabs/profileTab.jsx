@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../../css/profile/profile.css';
 
 class ProfileTab extends React.Component{
   constructor(props){
@@ -11,7 +12,11 @@ class ProfileTab extends React.Component{
   render(){
     return(
       <div style={{height:"100%"}}>
-        Profile Tab
+        <div className="profile-banner">
+          <div className="profile-cover">
+            
+          </div>
+        </div>
       </div>
     )
   }

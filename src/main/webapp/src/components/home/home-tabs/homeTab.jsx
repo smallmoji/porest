@@ -1,11 +1,11 @@
 import React from 'react';
 import $ from 'jquery';
 import { Button, Avatar, CardActions, Card, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize,List,ListItem } from '@material-ui/core';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import MuiAlert from '@material-ui/lab/Alert';
 import { muiIcon } from '../../../js/icons';
 import { withStyles } from '@material-ui/core/styles';
 import autosize from "autosize";
-
 const style = theme => ({
   postButtonGroup: {
     '& .MuiIconButton-root': {
@@ -53,6 +53,12 @@ const style = theme => ({
     '& span': {
       fontSize: ".8rem"
     }
+  },
+  postImagePreview: {
+    '& .MuiSvgIcon-root':{
+      fontSize:"2.5rem",
+      color:"#fff"
+    }
   }
   
 })
@@ -66,7 +72,8 @@ class HomeTab extends React.Component{
       postContent:"",
       snackBarSuccess: false,
       snackBarMessage: "",
-      postCommentId: 0
+      postCommentId: 0,
+      previewPostImage: ""
     }
   }
 
@@ -98,18 +105,24 @@ class HomeTab extends React.Component{
   handleSubmitPost(e){
     e.preventDefault();
     const that = this;
+    let formData = new FormData();
+    formData.append("userId", this.state.userId);
+    formData.append("image", this.fileUpload.files[0]);
+    formData.append("content", this.state.postContent);
+    
     $.ajax({
+      type: "POST",
       url: "createPost",
-      data: {
-        userId: this.state.userId,
-        content: this.state.postContent
-      },
+      data: formData,
+      processData: false,
+      contentType: false,
       success : function(response){
         if(response.result === "success"){
           that.postForm.reset();
           autosize(that.textarea);
           that.getPosts();
           that.setState({snackBarMessage: "Posted successfully!", snackBarSuccess: true, postContent: ""})
+          that.cancelImageUpload();
         }
       }
     })
@@ -138,6 +151,28 @@ class HomeTab extends React.Component{
    
   }
 
+  handlePreviewPostImage(e){
+    e.preventDefault();
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    if (e.target.files.length === 0) {
+      return;
+    }
+
+    reader.onloadend = (e) => {
+      this.setState({
+        previewPostImage: [reader.result]
+      });
+    }
+
+    reader.readAsDataURL(file);
+  }
+
+  cancelImageUpload(){
+    this.fileUpload.value = null;
+    this.setState({previewPostImage: null});
+  }
+
   render(){
     const { classes } = this.props;
 
@@ -148,9 +183,32 @@ class HomeTab extends React.Component{
             <Avatar style={{width:"50px",height:"50px"}}></Avatar>
             <div className="w-100">
               <textarea maxlength={255} ref={c=>this.textarea=c} onChange={this.handleWritePost.bind(this)} className={("post-input mt-2 px-3 ") + (this.state.postContent && "border-bottom")} placeholder="Share your thoughts."></textarea>
+              <div className="post-img-preview position-relative" 
+              style={{display: this.state.previewPostImage ? "block" : "none"}}>
+                <IconButton 
+                  className={classes.postImagePreview}
+                  style={{
+                    position:"absolute",
+                    right:"0",
+                    padding:"20px"}}
+                    onClick={this.cancelImageUpload.bind(this)}>
+                  <HighlightOffIcon/>
+                </IconButton>
+                <img className="my-2" src={this.state.previewPostImage} alt="" style={{width:"100%",borderRadius:"5%"}}/>
+              </div>
+              
               <div className="d-flex justify-content-between">
                 <div className={classes.postButtonGroup}>
-                  <IconButton>{muiIcon("imageIcon")}</IconButton>
+                  <input id="uploadPostImage" type="file" 
+                    onChange={this.handlePreviewPostImage.bind(this)} 
+                    ref={(fileUpload) => {
+                      this.fileUpload = fileUpload;
+                    }} 
+                    style={{display:"none"}} 
+                  />
+                  <IconButton onClick={() => this.fileUpload.click()}>
+                    {muiIcon("imageIcon")}
+                  </IconButton>
                   <IconButton>{muiIcon("gifIcon")}</IconButton>
                   <IconButton>{muiIcon("pollIcon")}</IconButton>
                   <IconButton>{muiIcon("emojiIcon")}</IconButton>
@@ -158,7 +216,7 @@ class HomeTab extends React.Component{
                 </div>
                 <div>
                   <button className="sidebar-post-btn badge-pill py-2 px-4 float-right" style={{fontSize:"1rem !important"}}
-                  disabled={this.state.postContent ? false : true}>Post</button>
+                  disabled={this.state.postContent || this.state.previewPostImage ? false : true}>Post</button>
                 </div>
               </div>
               
@@ -172,7 +230,7 @@ class HomeTab extends React.Component{
           return <div key={posts.key} className="border-bottom bg-white">
             <div className="d-flex w-100">
               <div className="d-flex justify-content-center pt-3 pl-3 pr-2">
-                <Avatar color="primary" aria-label="recipe"></Avatar>
+                <Avatar color="primary" aria-label="recipe">{posts.firstName.substring(0,1)}</Avatar>
               </div>
               <div className="w-100 pt-3 ml-2">
                 <CardHeader
@@ -186,9 +244,13 @@ class HomeTab extends React.Component{
                   title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@name_here <b>·</b> {posts.createdAt}</span></div>}
                 />
                 <CardContent className="p-0 pr-5 mt-1">
-                  <Typography variant="body2" color="inherit" component="p">
+                  <Typography className="mb-2" variant="body2" color="inherit" component="p">
                     {posts.content}
                   </Typography>
+                  {posts.imagePath != null && 
+                    <div>
+                      <img src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.imagePath} style={{width:"100%",borderRadius:"5%"}}/>  
+                    </div>}
                 </CardContent>
                 <CardActions className={classes.userPostsGroup}>
                   <div className={classes.heartIcon}>
