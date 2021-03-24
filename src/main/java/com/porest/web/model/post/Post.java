@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import com.porest.web.model.AuditModel;
 import com.porest.web.model.user.UserProfile;
@@ -35,8 +36,8 @@ public class Post extends AuditModel {
 	@ManyToMany(mappedBy = "likedPosts", cascade = CascadeType.ALL)
 	private Set<UserProfile> likes;
 	
-//	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-//	private Collection<PostComment> comments;
+	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+	private Collection<PostComment> comments;
 
 	public Long getId() {
 		return id;
@@ -61,6 +62,14 @@ public class Post extends AuditModel {
 	public void setUserProfile(UserProfile userProfile) {
 		this.userProfile = userProfile;
 	}
+	
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
+	}
 
 	public Collection<UserProfile> getLikes() {
 		return likes;
@@ -78,14 +87,19 @@ public class Post extends AuditModel {
 		likes.remove(user);
 	}
 
-	public String getImagePath() {
-		return imagePath;
+	public void addComment(PostComment comment) {
+		comments.add(comment);
+	}
+	
+	public void removeComment(PostComment comment) {
+		comments.remove(comment);
 	}
 
-	public void setImagePath(String imagePath) {
-		this.imagePath = imagePath;
+	public Collection<PostComment> getComments() {
+		return comments;
 	}
-	
-	
-	
+
+	public void setComments(Collection<PostComment> comments) {
+		this.comments = comments;
+	}
 }

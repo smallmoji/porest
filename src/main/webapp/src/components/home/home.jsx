@@ -94,6 +94,7 @@ class Home extends React.Component{
       currTabpanel: 0,
       mainTitle:"Home",
       user: {},
+      userProfile: {},
       currYear: "",
       accountMenuAnchorEl: null,
       requestsCount: 0,
@@ -121,7 +122,7 @@ class Home extends React.Component{
       },
       success: function(response) {
         if(response.result === "success"){
-          that.setState({user: response.user})
+          that.setState({user: response.user, userProfile: response.profile})
         }
       }
     })
@@ -270,7 +271,7 @@ class Home extends React.Component{
                           {this.state.user.firstName}
                         </Typography>
                         <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                          {this.state.user.email}
+                          @{this.state.userProfile.displayName}
                         </Typography>
                       </div>
                     </div>
@@ -346,8 +347,8 @@ class Home extends React.Component{
                   <div className="explore-people-tab">
                     <div className="p-3 font-weight-bold border-bottom">Suggested People</div>
                     <List>
-                      {this.state.suggestedUsers.map(item =>{
-                        if(item.friendship === "not friends"){
+                      {this.state.suggestedUsers.map((item, index) =>{
+                        if(item.friendship === "not friends" && index < 5){
                           return <ListItem button className={classes.listItem} key={item.key}>
                             <ListItemAvatar>
                               <Avatar></Avatar>

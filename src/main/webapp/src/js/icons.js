@@ -16,6 +16,7 @@ import SmsOutlinedIcon from '@material-ui/icons/SmsOutlined';
 import ShareOutlinedIcon from '@material-ui/icons/ShareOutlined';
 import FavoriteBorderOutlinedIcon from '@material-ui/icons/FavoriteBorderOutlined';
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 export function muiIcon(iconName){
   switch (iconName) {
@@ -55,6 +56,8 @@ export function muiIcon(iconName){
       return <FavoriteBorderOutlinedIcon/>;
     case 'filledHeartIcon':
       return <FavoriteIcon/>;
+    case 'deleteIcon':
+      return <DeleteIcon />;
     default:
       break;
   }

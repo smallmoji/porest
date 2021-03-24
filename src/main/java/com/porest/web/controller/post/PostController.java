@@ -55,4 +55,18 @@ public class PostController {
 			@RequestParam("postId")long postId){
 		return postService.getPostLikes(postId);
 	}
+	
+	@RequestMapping("addComment")
+	public HashMap<String, Object> addComment(
+			@RequestParam("content")String comment,
+			@RequestParam("userId")long userId,
+			@RequestParam("postId")long postId){
+		return postService.addComment(postId, userId, comment);
+	}
+	
+	@RequestMapping("deleteComment")
+	public HashMap<String, Object> deleteComment(
+			@RequestParam("commentId")long commentId){
+		return postService.deleteComment(commentId);
+	}
 }

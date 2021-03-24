@@ -14,8 +14,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.porest.web.model.post.Post;
+import com.porest.web.model.post.PostComment;
 import com.porest.web.model.user.Friendship;
 import com.porest.web.model.user.UserProfile;
+import com.porest.web.repository.post.PostCommentRepo;
 import com.porest.web.repository.post.PostRepository;
 import com.porest.web.repository.user.UserAccountRepository;
 import com.porest.web.repository.user.UserProfileRepository;
@@ -29,6 +31,8 @@ public class PostServiceImpl implements PostService {
 	UserProfileRepository userProfileRepo;
 	@Autowired
 	PostRepository postRepo;
+	@Autowired
+	PostCommentRepo postCommentRepo;
 	
 	
 	public HashMap<String, Object> createPost(Long userId, Post post, MultipartFile file){
@@ -151,6 +155,24 @@ public class PostServiceImpl implements PostService {
 				tempMap.put("likes", post.getLikes().size());
 				tempMap.put("imagePath", post.getImagePath());
 				tempMap.put("userId", post.getUserProfile().getUserAccount().getId());
+				tempMap.put("displayName",post.getUserProfile().getDisplayName());
+				
+				if(post.getComments() != null && !post.getComments().isEmpty()) {
+					List<Object> commentsList = new ArrayList<>();
+					
+					for(PostComment item : post.getComments()) {
+						HashMap<String,Object> comment = new HashMap<>();
+						comment.put("firstName", item.getUser().getUserAccount().getFirstName());
+						comment.put("lastName", item.getUser().getUserAccount().getLastName());
+						comment.put("content", item.getContent());
+						comment.put("id",item.getId());
+						commentsList.add(comment);
+					}
+					
+					tempMap.put("comments", commentsList);
+					tempMap.put("commentCount", commentsList.size());
+				}
+				
 				if(post.getLikes().contains(user)) {
 					tempMap.put("isLiked", true);
 				}else {
@@ -175,11 +197,17 @@ public class PostServiceImpl implements PostService {
 		try {
 			Optional<Post> post = postRepo.findById(postId);
 			if(post.isPresent() && post.get() != null) {
-				post.get().getUserProfile().removePost(post.get());
-//				if(!post.get().getLikes().isEmpty()) {
-//					post.get().getLikes().clear();
-//				}
-				userProfileRepo.save(post.get().getUserProfile());
+				UserProfile userProf = post.get().getUserProfile();
+				userProf.removePost(post.get());
+				
+				if(!post.get().getLikes().isEmpty()) {
+					for(UserProfile user : post.get().getLikes()) {
+						user.removeLikedPosts(post.get());
+					}
+					post.get().getLikes().clear();
+				}
+				
+				userProfileRepo.save(userProf);
 				postRepo.delete(post.get());
 				
 				resultMap.put("result","success");
@@ -246,6 +274,46 @@ public class PostServiceImpl implements PostService {
 			resultMap.put("result", "failed");
 			resultMap.put("error", e.getMessage());
 		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> addComment(Long postId, Long userId, String comment){
+		HashMap<String, Object> resultMap = new HashMap<>();
+		PostComment postComment = new PostComment();
+		try {
+			Post post = postRepo.findById(postId).get();
+			postComment.setContent(comment);
+			postComment.setUser(userAccountRepo.findById(userId).get().getUserProfile());
+			postComment.setPost(post);
+			PostComment savedComment = postCommentRepo.save(postComment);
+			post.addComment(savedComment);
+			postRepo.save(post);
+			resultMap.put("result","success");
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultMap.put("result", "failed");
+			resultMap.put("error", e.getMessage());
+		}
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> deleteComment(Long commendId){
+		HashMap<String, Object> resultMap = new HashMap<>();
+		try {
+			PostComment comment = postCommentRepo.findById(commendId).get();
+			Post post = comment.getPost();
+			
+			post.removeComment(comment);
+			comment.setPost(null);
+			postRepo.save(post);
+			postCommentRepo.delete(comment);
+			resultMap.put("result","success");
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultMap.put("result", "failed");
+			resultMap.put("error", e.getMessage());
+		}
+		
 		return resultMap;
 	}
 }

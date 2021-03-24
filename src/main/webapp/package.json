@@ -17,6 +17,7 @@
     "bootstrap": "^4.6.0",
     "customize-cra": "^1.0.0",
     "date-fns": "2.11.1",
+    "emoji-picker-react": "^3.4.3",
     "jquery": "^3.5.1",
     "react": "^17.0.1",
     "react-app-rewired": "^2.1.8",

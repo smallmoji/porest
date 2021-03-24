@@ -17,6 +17,7 @@ import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.porest.web.model.post.Post;
+import com.porest.web.model.post.PostComment;
 
 @Entity
 @JsonIgnoreProperties({"userAccount"})
@@ -51,6 +52,8 @@ public class UserProfile implements Serializable {
 	@JoinTable
 	private Set<Post> likedPosts;
 	
+	@OneToMany(mappedBy = "user")
+	private Collection<PostComment> postComments;
 	
 	public UserProfile() {
 	}

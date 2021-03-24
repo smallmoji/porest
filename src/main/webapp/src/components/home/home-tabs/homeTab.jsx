@@ -1,11 +1,13 @@
 import React from 'react';
 import $ from 'jquery';
-import { Button, Avatar, CardActions, Card, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize,List,ListItem } from '@material-ui/core';
+import { Popover, Button, Avatar, CardActions, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize, List, ListItem, Menu, MenuItem } from '@material-ui/core';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import MuiAlert from '@material-ui/lab/Alert';
 import { muiIcon } from '../../../js/icons';
 import { withStyles } from '@material-ui/core/styles';
 import autosize from "autosize";
+import Picker from 'emoji-picker-react';
+
 const style = theme => ({
   postButtonGroup: {
     '& .MuiIconButton-root': {
@@ -73,7 +75,14 @@ class HomeTab extends React.Component{
       snackBarSuccess: false,
       snackBarMessage: "",
       postCommentId: 0,
-      previewPostImage: ""
+      previewPostImage: "",
+      postMenuAnchorEl: "",
+      postToDelete: null,
+      postUser: null,
+      emojisAnchorEl:null,
+      commentInput: "",
+      deleteCommentAnchorEl: null,
+      commentToDelete: null,
     }
   }
 
@@ -143,7 +152,7 @@ class HomeTab extends React.Component{
   }
 
   handleOpenComments(id){
-    if(this.state.postCommentId == id){
+    if(this.state.postCommentId === id){
       this.setState({postCommentId: ""});
     }else{
       this.setState({postCommentId: id});
@@ -173,16 +182,76 @@ class HomeTab extends React.Component{
     this.setState({previewPostImage: null});
   }
 
+  handleDeletePost(){
+    const that = this;
+
+    $.ajax({
+      url: "deletePost",
+      data: {
+        postId: this.state.postToDelete,
+      },
+      success: function(response){
+        that.getPosts();
+        that.setState({postToDelete: null, postMenuAnchorEl: null })
+      }
+    })
+
+  }
+
+  handleDeleteComment(){
+    const that = this;
+
+    $.ajax({
+      url: "deleteComment",
+      data: {
+        commentId: this.state.commentToDelete,
+      },
+      success: function(response){
+        that.getPosts();
+        that.setState({commentToDelete: null, deleteCommentAnchorEl: null })
+      }
+    })
+  }
+
+  handleAddEmoji(e, emoji){
+    let content = this.state.postContent + emoji.emoji;
+    this.setState({postContent: content})
+    this.textarea.value += emoji.emoji;
+  }
+
+  handleAddComment(postId){
+    const that = this;
+
+    $.ajax({
+      url: "addComment",
+      data: {
+        postId: postId,
+        userId: this.state.userId,
+        content: this.state.commentInput
+      },
+      success: function(){
+        that.getPosts();
+        document.getElementById("addCommentInput" + postId).value = "";
+      }
+    })
+
+  }
+
   render(){
     const { classes } = this.props;
-
     return(
       <div style={{backgroundColor:"#dee2e6",height:"100%"}}>
         <div className="post-box border-bottom p-2 pl-3 mb-3 bg-white">
           <form id="postForm" className="d-flex" ref={(el) => this.postForm = el} onSubmit={this.handleSubmitPost.bind(this)} >
             <Avatar style={{width:"50px",height:"50px"}}></Avatar>
             <div className="w-100">
-              <textarea maxlength={255} ref={c=>this.textarea=c} onChange={this.handleWritePost.bind(this)} className={("post-input mt-2 px-3 ") + (this.state.postContent && "border-bottom")} placeholder="Share your thoughts."></textarea>
+              <textarea 
+                maxlength={255} 
+                ref={c=>this.textarea=c} 
+                onChange={this.handleWritePost.bind(this)} 
+                className={("post-input mt-2 px-3 ") + (this.state.postContent && "border-bottom")} 
+                placeholder="Share your thoughts.">
+              </textarea>
               <div className="post-img-preview position-relative" 
               style={{display: this.state.previewPostImage ? "block" : "none"}}>
                 <IconButton 
@@ -194,7 +263,7 @@ class HomeTab extends React.Component{
                     onClick={this.cancelImageUpload.bind(this)}>
                   <HighlightOffIcon/>
                 </IconButton>
-                <img className="my-2" src={this.state.previewPostImage} alt="" style={{width:"100%",borderRadius:"5%"}}/>
+                <img className="my-2 w-100 rounded" src={this.state.previewPostImage} alt=""/>
               </div>
               
               <div className="d-flex justify-content-between">
@@ -211,7 +280,28 @@ class HomeTab extends React.Component{
                   </IconButton>
                   <IconButton>{muiIcon("gifIcon")}</IconButton>
                   <IconButton>{muiIcon("pollIcon")}</IconButton>
-                  <IconButton>{muiIcon("emojiIcon")}</IconButton>
+                  <IconButton 
+                    onClick={(e)=>{this.setState({emojisAnchorEl: e.target})}}
+                  >{muiIcon("emojiIcon")}</IconButton>
+                  <Popover 
+                    anchorEl={this.state.emojisAnchorEl}
+                    open={Boolean(this.state.emojisAnchorEl)}
+                    onClose={()=>{this.setState({emojisAnchorEl: null})}}
+                    anchorOrigin={{
+                      vertical: 'center',
+                      horizontal: 'center',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
+                    }}
+                  >
+                     <Picker 
+                      onEmojiClick={this.handleAddEmoji.bind(this)} 
+                      native
+                      disableSkinTonePicker />
+                  </Popover>
+
                   <IconButton>{muiIcon("scheduleIcon")}</IconButton>
                 </div>
                 <div>
@@ -227,96 +317,145 @@ class HomeTab extends React.Component{
         </div>
 
         {this.state.posts.map( posts => {
-          return <div key={posts.key} className="border-bottom bg-white">
-            <div className="d-flex w-100">
-              <div className="d-flex justify-content-center pt-3 pl-3 pr-2">
-                <Avatar color="primary" aria-label="recipe">{posts.firstName.substring(0,1)}</Avatar>
+          return<div className="bg-white border-bottom" key={posts.key}>
+              <div className="d-flex w-100">
+                <div className="d-flex justify-content-center pt-3 pl-3 pr-2">
+                  <Avatar color="primary" aria-label="recipe">{posts.firstName.substring(0,1)}</Avatar>
+                </div>
+                <div className="w-100 pt-3 ml-2">
+                  <CardHeader
+                    className="p-0"
+                    disableTypography
+                    action={
+                      <IconButton 
+                        className="p-0 mr-3" 
+                        aria-label="settings"
+                        onClick={(e)=>{
+                          this.setState({postMenuAnchorEl: e.target, postToDelete: posts.id, postUser: posts.userId})
+                          }}>
+                        {muiIcon('moreVertical')}
+                      </IconButton>
+                    }
+                    title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@{posts.displayName} <b>·</b> {posts.createdAt}</span></div>}
+                  />
+
+                  <CardContent className="p-0 pr-5 mt-1">
+                    <Typography className="mb-2" variant="body2" color="inherit" component="p">
+                      {posts.content}
+                    </Typography>
+                    {posts.imagePath != null && 
+                      <div>
+                        <img className="w-100 rounded" src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.imagePath} alt=""/>  
+                      </div>}
+                  </CardContent>
+                  <CardActions className={classes.userPostsGroup}>
+                    <div className={classes.heartIcon}>
+                      <IconButton onClick={()=>{this.handleLikePost(posts.id)}}>
+                        {posts.isLiked ? muiIcon('filledHeartIcon') : muiIcon('heartIcon') }
+                      </IconButton>
+                      <span>{posts.likes}</span>
+                    </div>
+                    <div className={classes.commentIcon}>
+                      <IconButton onClick={()=>{this.handleOpenComments(posts.id)}}>
+                        {muiIcon('commentIcon')}
+                      </IconButton>
+                      <span>{posts.commentCount || 0}</span>
+                    </div>
+                    <div className={classes.shareIcon}>
+                      <IconButton>
+                        {muiIcon('shareIcon')}
+                      </IconButton>
+                      <span>390</span>
+                    </div>
+                  </CardActions>
+                </div>
               </div>
-              <div className="w-100 pt-3 ml-2">
-                <CardHeader
-                  className="p-0"
-                  disableTypography
-                  action={
-                    <IconButton className="p-0 mr-3" aria-label="settings">
-                      {muiIcon('moreVertical')}
-                    </IconButton>
-                  }
-                  title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@name_here <b>·</b> {posts.createdAt}</span></div>}
-                />
-                <CardContent className="p-0 pr-5 mt-1">
-                  <Typography className="mb-2" variant="body2" color="inherit" component="p">
-                    {posts.content}
-                  </Typography>
-                  {posts.imagePath != null && 
-                    <div>
-                      <img src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.imagePath} style={{width:"100%",borderRadius:"5%"}}/>  
-                    </div>}
-                </CardContent>
-                <CardActions className={classes.userPostsGroup}>
-                  <div className={classes.heartIcon}>
-                    <IconButton onClick={()=>{this.handleLikePost(posts.id)}}>
-                      {posts.isLiked ? muiIcon('filledHeartIcon') : muiIcon('heartIcon') }
-                    </IconButton>
-                    <span>{posts.likes}</span>
-                  </div>
-                  <div className={classes.commentIcon}>
-                    <IconButton onClick={()=>{this.handleOpenComments(posts.id)}}>
-                      {muiIcon('commentIcon')}
-                    </IconButton>
-                    <span>560</span>
-                  </div>
-                  <div className={classes.shareIcon}>
-                    <IconButton>
-                      {muiIcon('shareIcon')}
-                    </IconButton>
-                    <span>390</span>
-                  </div>
-                </CardActions>
-              </div>
+              <Collapse className="border-top" in={posts.id === this.state.postCommentId}>
+                <div className="comment-box">
+                  <Avatar/>
+                  <TextareaAutosize 
+                    id={"addCommentInput" + posts.id}
+                    placeholder="Write comment..."
+                    onChange={(e) => {this.setState({commentInput: e.target.value})}}
+                    />
+                  <button 
+                    className="comments-button p-2 rounded"
+                    onClick={() =>{this.handleAddComment(posts.id)}}
+                    >Comment
+                  </button>
+                </div>
+                <div className="comment-section">
+                  <List>
+                    {posts.commentCount > 0 && posts.comments.map(comment => {
+                      return <ListItem>
+                      <CardHeader className="py-0 px-2 w-100"
+                        avatar={
+                          <Avatar color="primary" aria-label="recipe">
+                          </Avatar>
+                        }
+                        action={
+                          <IconButton 
+                          
+                          onClick={(e)=>{
+                            this.setState({deleteCommentAnchorEl: e.target, commentToDelete: comment.id, postUser: posts.userId})
+                          }}>
+                            {muiIcon('moreVertical')}
+                          </IconButton>
+                        }
+                        title={<div><b>{comment.firstName} {comment.lastName}</b><span className="ml-2 text-mute">{comment.content}</span></div>}
+                      />
+                    </ListItem>
+                    })}
+                  </List>
+                </div>
+              </Collapse>
             </div>
-            <Collapse className="border-top" in={posts.id == this.state.postCommentId}>
-              <div className="comment-box">
-                <Avatar/>
-                <TextareaAutosize placeholder="Write comment..." />
-                <button className="comments-button p-2 rounded">Comment</button>
-              </div>
-              <div className="comment-section">
-                <List>
-                  <ListItem>
-                    <CardHeader className="py-0 px-2 w-100"
-                      avatar={
-                        <Avatar color="primary" aria-label="recipe">
-                        </Avatar>
-                      }
-                      action={
-                        <IconButton aria-label="settings">
-                          {muiIcon('moreVertical')}
-                        </IconButton>
-                      }
-                      title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-2 text-mute">Yo wtf is this shit.</span></div>}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <CardHeader className="py-0 px-2 w-100"
-                      avatar={
-                        <Avatar color="primary" aria-label="recipe">
-                        </Avatar>
-                      }
-                      action={
-                        <IconButton aria-label="settings">
-                          {muiIcon('moreVertical')}
-                        </IconButton>
-                      }
-                      title={<div><b>Jayson De Los Reyes</b><span className="ml-2 text-mute">Multiple people like posts is working nice</span></div>}
-                    />
-                  </ListItem>
-                </List>
-              </div>
-            </Collapse>
-          </div>
-
           })}
+          {this.state.userId === this.state.postUser &&
+            <Menu
+              anchorEl={this.state.postMenuAnchorEl}
+              open={Boolean(this.state.postMenuAnchorEl)}
+              onClose={()=>{this.setState({postMenuAnchorEl: null, postToDelete: null})}}
+            >
+              <MenuItem>
+                <Button
+                  size="small"
+                  color="secondary"
+                  startIcon={muiIcon("deleteIcon")}
+                  onClick={this.handleDeletePost.bind(this)}
+                >
+                  Delete
+                </Button>
+              </MenuItem>
+            </Menu>
+          }
 
+          {this.state.userId === this.state.postUser && 
+            <Popover 
+              anchorEl={this.state.deleteCommentAnchorEl}
+              open={Boolean(this.state.deleteCommentAnchorEl)}
+              onClose={()=>{this.setState({deleteCommentAnchorEl: null})}}
+              anchorOrigin={{
+                vertical: 'center',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+                <Button
+                  size="small"
+                  color="secondary"
+                  startIcon={muiIcon("deleteIcon")}
+                  onClick={this.handleDeleteComment.bind(this)}
+                >
+                  Delete
+                </Button>
+            </Popover>
+          }
+
+          
         <Snackbar
           open={this.state.snackBarSuccess}
           autoHideDuration={4000}
