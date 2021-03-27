@@ -11,6 +11,8 @@
 	<groupId>com.porest</groupId>
 	<artifactId>Porest</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	 <packaging>war</packaging>
+	 
 	<name>Porest</name>
 	<description>A simple social networking webapp.</description>
 	<properties>

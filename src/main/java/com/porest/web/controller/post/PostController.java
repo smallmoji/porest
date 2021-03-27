@@ -69,4 +69,15 @@ public class PostController {
 			@RequestParam("commentId")long commentId){
 		return postService.deleteComment(commentId);
 	}
+	
+	@RequestMapping("sharePost")
+	public HashMap<String, Object> sharePost(
+			@RequestParam("userId") Long userId,
+			@RequestParam("postToShareId")Long postToShareId,
+			@RequestParam("content")String content){
+		Post post = new Post();
+		post.setPostSharedId(postToShareId);
+		post.setContent(content);
+		return postService.sharePost(userId, post);
+	}
 }

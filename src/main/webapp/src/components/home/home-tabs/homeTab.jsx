@@ -1,12 +1,13 @@
 import React from 'react';
 import $ from 'jquery';
-import { Popover, Button, Avatar, CardActions, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize, List, ListItem, Menu, MenuItem } from '@material-ui/core';
+import { Popover, Button, Avatar, CardActions, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize, List, ListItem, Menu, MenuItem, Dialog, DialogActions, DialogContent  } from '@material-ui/core';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import MuiAlert from '@material-ui/lab/Alert';
 import { muiIcon } from '../../../js/icons';
 import { withStyles } from '@material-ui/core/styles';
 import autosize from "autosize";
 import Picker from 'emoji-picker-react';
+import { SignalCellularNullOutlined } from '@material-ui/icons';
 
 const style = theme => ({
   postButtonGroup: {
@@ -83,6 +84,8 @@ class HomeTab extends React.Component{
       commentInput: "",
       deleteCommentAnchorEl: null,
       commentToDelete: null,
+      postToShare: null,
+      sharePostInput:""
     }
   }
 
@@ -237,6 +240,23 @@ class HomeTab extends React.Component{
 
   }
 
+  handleSharePost(postId){
+    const that = this;
+
+    $.ajax({
+      url: "sharePost",
+      data: {
+        postToShareId: postId,
+        userId: this.state.userId,
+        content: this.state.sharePostInput
+      },
+      success: function(){
+        that.getPosts();
+        that.setState({sharePostInput: ""})
+      }
+    })
+  }
+
   render(){
     const { classes } = this.props;
     return(
@@ -347,6 +367,30 @@ class HomeTab extends React.Component{
                       <div>
                         <img className="w-100 rounded" src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.imagePath} alt=""/>  
                       </div>}
+
+                    {posts.sharedPost != undefined &&
+                      <div className="d-flex w-100 border pb-3">
+                        <div className="d-flex justify-content-center pt-3 pl-3 pr-2">
+                          <Avatar color="primary" aria-label="recipe">{posts.sharedPost.firstName.substring(0,1)}</Avatar>
+                        </div>
+                        <div className="w-100 pt-3 ml-2">
+                          <CardHeader
+                            className="p-0"
+                            disableTypography
+                            title={<div><b>{posts.sharedPost.firstName} {posts.sharedPost.lastName}</b><span className="ml-1 ash-text">@{posts.sharedPost.displayName} <b>·</b> {posts.sharedPost.createdAt}</span></div>}
+                          />
+                          <CardContent className="p-0 pr-5 mt-1">
+                            <Typography className="mb-2" variant="body2" color="inherit" component="p">
+                              {posts.sharedPost.content}
+                            </Typography>
+                            {posts.sharedPost.imagePath != null && 
+                              <div>
+                                <img className="w-100 rounded" src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.sharedPost.imagePath} alt=""/>  
+                              </div>}
+                          </CardContent>
+                        </div>
+                      </div>
+                    }
                   </CardContent>
                   <CardActions className={classes.userPostsGroup}>
                     <div className={classes.heartIcon}>
@@ -362,11 +406,52 @@ class HomeTab extends React.Component{
                       <span>{posts.commentCount || 0}</span>
                     </div>
                     <div className={classes.shareIcon}>
-                      <IconButton>
+                      <IconButton onClick={()=>{this.setState({postToShare: posts.id})}}>
                         {muiIcon('shareIcon')}
                       </IconButton>
-                      <span>390</span>
+                      <span>{posts.shareCount || 0}</span>
                     </div>
+
+
+                    <Dialog 
+                      open={this.state.postToShare === posts.id}
+                      onClose={()=>{this.setState({postToShare: null})}}
+                      >
+                      <DialogContent>
+                      <div className="comment-box">
+                        <TextareaAutosize 
+                          placeholder="Share your thoughts"
+                           onChange={(e) => {this.setState({sharePostInput: e.target.value})}}/>
+                      </div>
+        
+                        <div className="d-flex w-100">
+                          <div className="d-flex justify-content-center pt-3 pl-3 pr-2">
+                            <Avatar color="primary" aria-label="recipe">{posts.firstName.substring(0,1)}</Avatar>
+                          </div>
+                          <div className="w-100 pt-3 ml-2">
+                            <CardHeader
+                              className="p-0"
+                              disableTypography
+                              title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@{posts.displayName} <b>·</b> {posts.createdAt}</span></div>}
+                            />
+                            <CardContent className="p-0 pr-5 mt-1">
+                              <Typography className="mb-2" variant="body2" color="inherit" component="p">
+                                {posts.content}
+                              </Typography>
+                              {posts.imagePath != null && 
+                                <div>
+                                  <img className="w-100 rounded" src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.imagePath} alt=""/>  
+                                </div>}
+                            </CardContent>
+                          </div>
+                        </div>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={()=>{this.handleSharePost(posts.id)}}>Share</Button>
+                      </DialogActions>
+                    </Dialog>
+
+
                   </CardActions>
                 </div>
               </div>

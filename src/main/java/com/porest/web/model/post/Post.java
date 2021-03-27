@@ -38,6 +38,30 @@ public class Post extends AuditModel {
 	
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
 	private Collection<PostComment> comments;
+	
+	private Long postSharedId;
+	
+	public Long getPostSharedId() {
+		return postSharedId;
+	}
+
+	public void setPostSharedId(Long postSharedId) {
+		this.postSharedId = postSharedId;
+	}
+
+	public int getShareCount() {
+		return shareCount;
+	}
+
+	public void addShareCount() {
+		this.shareCount++;
+	}
+	
+	public void removeShareCount() {
+		this.shareCount--;
+	}
+
+	private int shareCount;
 
 	public Long getId() {
 		return id;

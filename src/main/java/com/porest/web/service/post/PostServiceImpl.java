@@ -173,6 +173,36 @@ public class PostServiceImpl implements PostService {
 					tempMap.put("commentCount", commentsList.size());
 				}
 				
+				if(post.getPostSharedId() != null) {
+					HashMap<String,Object> postShared = new HashMap<>();
+					Post toShare = postRepo.findById(post.getPostSharedId()).get();
+					String dateToshow2 = "";
+					LocalDateTime postSharedDate = toShare.getCreatedAt();
+					
+					if(postSharedDate.toLocalDate().equals(currDate.toLocalDate())) {
+						if(postSharedDate.getHour() == currDate.getHour()) {
+							if(postSharedDate.getMinute() == currDate.getMinute()) {
+								dateToshow2 = "Just Now";
+							}else {
+								dateToshow2 = (currDate.getMinute() - postSharedDate.getMinute()) + "m";
+							}
+						}else {
+							dateToshow2 = (currDate.getHour() - postSharedDate.getHour()) + "h";
+						}
+					}else {
+						dateToshow2 = postSharedDate.getMonth().toString().substring(0,1) + 
+								postSharedDate.getMonth().toString().substring(1,3).toLowerCase() + " " + postSharedDate.getDayOfMonth();
+					}
+					
+					postShared.put("createdAt", dateToshow2);
+					postShared.put("displayName",toShare.getUserProfile().getDisplayName());
+					postShared.put("firstName", toShare.getUserProfile().getUserAccount().getFirstName());
+					postShared.put("lastName", toShare.getUserProfile().getUserAccount().getLastName());
+					postShared.put("imagePath", toShare.getImagePath());
+					
+					tempMap.put("sharedPost", postShared);
+				}
+				
 				if(post.getLikes().contains(user)) {
 					tempMap.put("isLiked", true);
 				}else {
@@ -314,6 +344,27 @@ public class PostServiceImpl implements PostService {
 			resultMap.put("error", e.getMessage());
 		}
 		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> sharePost(Long userId, Post post){
+		HashMap<String, Object> resultMap = new HashMap<>();
+		
+		try {
+			UserProfile user = userAccountRepo.findById(userId).get().getUserProfile();
+			Post toShare = postRepo.findById(post.getPostSharedId()).get();
+			toShare.addShareCount();
+			
+			post.setUserProfile(user);
+			postRepo.save(toShare);
+			postRepo.save(post);
+			
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultMap.put("result", "failed");
+			resultMap.put("error", e.getMessage());
+		}
 		return resultMap;
 	}
 }

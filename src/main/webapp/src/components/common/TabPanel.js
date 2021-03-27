@@ -4,9 +4,6 @@ import Box from '@material-ui/core/Box';
 
 
 export default class TabPanel extends React.Component {
-  constructor(props){
-    super(props);
-  }
   
   render(){
     const { children, value, index, ...other } = this.props;
