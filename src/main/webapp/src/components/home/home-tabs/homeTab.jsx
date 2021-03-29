@@ -1,6 +1,6 @@
 import React from 'react';
 import $ from 'jquery';
-import { Popover, Button, Avatar, CardActions, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize, List, ListItem, Menu, MenuItem, Dialog, DialogActions, DialogContent  } from '@material-ui/core';
+import { Popover, Button, Avatar, CardActions, CardHeader, IconButton, CardContent, Typography, Snackbar, Collapse, TextareaAutosize, List, ListItem, Menu, MenuItem, Dialog, DialogActions, DialogContent, DialogTitle  } from '@material-ui/core';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import MuiAlert from '@material-ui/lab/Alert';
 import { muiIcon } from '../../../js/icons';
@@ -252,7 +252,7 @@ class HomeTab extends React.Component{
       },
       success: function(){
         that.getPosts();
-        that.setState({sharePostInput: ""})
+        that.setState({sharePostInput: "", postToshare: null})
       }
     })
   }
@@ -356,7 +356,7 @@ class HomeTab extends React.Component{
                         {muiIcon('moreVertical')}
                       </IconButton>
                     }
-                    title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@{posts.displayName} <b>·</b> {posts.createdAt}</span></div>}
+                    title={<div><b>{posts.firstName} {posts.lastName}</b><span className="ml-1 ash-text">@{posts.displayName} <b>·</b> {posts.createdAt}</span> {posts.sharedPost != undefined && <span className="font-italic ml-2">shared a post</span>}</div>}
                   />
 
                   <CardContent className="p-0 pr-5 mt-1">
@@ -385,7 +385,7 @@ class HomeTab extends React.Component{
                             </Typography>
                             {posts.sharedPost.imagePath != null && 
                               <div>
-                                <img className="w-100 rounded" src={"../../../../public/media/POSTS/" + posts.userId + "/" + posts.sharedPost.imagePath} alt=""/>  
+                                <img className="w-100 rounded" src={"../../../../public/media/POSTS/" + posts.sharedPost.userId + "/" + posts.sharedPost.imagePath} alt=""/>  
                               </div>}
                           </CardContent>
                         </div>
@@ -416,7 +416,9 @@ class HomeTab extends React.Component{
                     <Dialog 
                       open={this.state.postToShare === posts.id}
                       onClose={()=>{this.setState({postToShare: null})}}
+                      maxWidth="md"
                       >
+                      <DialogTitle>Share Post</DialogTitle>
                       <DialogContent>
                       <div className="comment-box">
                         <TextareaAutosize 
