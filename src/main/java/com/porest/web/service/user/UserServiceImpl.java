@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.porest.web.model.user.Friendship;
 import com.porest.web.model.user.UserAccount;
@@ -16,6 +17,7 @@ import com.porest.web.model.user.UserProfile;
 import com.porest.web.repository.user.FriendshipRepository;
 import com.porest.web.repository.user.UserAccountRepository;
 import com.porest.web.repository.user.UserProfileRepository;
+import com.porest.web.utils.FileUploadUtil;
 
 
 @Component
@@ -152,6 +154,7 @@ public class UserServiceImpl implements UserService {
 				HashMap<String,Object> profileMap = new HashMap<>();
 				profileMap.put("displayName", userProf.getDisplayName());
 				profileMap.put("about", userProf.getAbout());
+				profileMap.put("profileImagePath",userProf.getProfileImagePath());
 				
 				resultMap.put("result", "success");
 				resultMap.put("user",user);
@@ -462,6 +465,9 @@ public class UserServiceImpl implements UserService {
 							tempMap.put("friendship","not friends");
 						}
 						tempMap.put("about", item.getUserProfile().getAbout());
+						tempMap.put("displayName", item.getUserProfile().getDisplayName());
+						tempMap.put("profileImagePath", item.getUserProfile().getProfileImagePath());
+						
 						otherUsers.add(tempMap);
 						
 					}
@@ -477,6 +483,38 @@ public class UserServiceImpl implements UserService {
 			e.printStackTrace();
 		}
 		
+		return resultMap;
+	}
+	
+	public HashMap<String, Object> updateUserProfile(Long userId, String displayName, String about, MultipartFile image){
+		HashMap<String, Object> resultMap = new HashMap<>();
+		try {
+			UserProfile user = userAccountRepo.findById(userId).get().getUserProfile();
+			if(about != null && !about.isEmpty()) {
+				user.setAbout(about);
+			}
+			
+			user.setDisplayName(displayName);
+			
+			String fileName = "PROFILE_";
+			if(image != null && !image.isEmpty()) {
+				fileName += StringUtils.cleanPath(image.getOriginalFilename());
+				user.setProfileImagePath(fileName);	
+			}
+			
+			UserProfile savedUser = userProfileRepo.save(user);
+			if(savedUser.getProfileImagePath() != null && image != null && !image.isEmpty()) {
+				String uploadDir = "src/main/webapp/public/media/PROFILE/" + savedUser.getUserAccount().getId();
+				FileUploadUtil.saveFile(uploadDir, fileName, image);
+			}
+			
+			
+			resultMap.put("result", "success");
+		} catch (Exception e) {
+			e.printStackTrace();
+			resultMap.put("result", "failed");
+			resultMap.put("error", e.getMessage());
+		}
 		return resultMap;
 	}
 	

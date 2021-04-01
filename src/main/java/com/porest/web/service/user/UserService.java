@@ -2,6 +2,8 @@ package com.porest.web.service.user;
 
 import java.util.HashMap;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.porest.web.model.user.UserAccount;
 
 public interface UserService {
@@ -17,4 +19,5 @@ public interface UserService {
 	HashMap<String, Object> getUserFriends(long userId);
 	HashMap<String, Object> acceptFriendRequest(long requesterId, long friendId);
 	HashMap<String, Object> getOtherUsers(Long userId);
+	HashMap<String, Object> updateUserProfile(Long userId, String displayName, String about, MultipartFile image);
 }

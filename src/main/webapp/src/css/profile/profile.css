@@ -1,5 +1,6 @@
 .profile-cover{
   height: 200px;
   width: 100%;
-  background-color: #C4CFD6;
+  background-image: url('../../misc/forest-bg.svg');
+  background-size: cover;
 }

@@ -155,6 +155,7 @@ public class PostServiceImpl implements PostService {
 				tempMap.put("likes", post.getLikes().size());
 				tempMap.put("imagePath", post.getImagePath());
 				tempMap.put("userId", post.getUserProfile().getUserAccount().getId());
+				tempMap.put("profileImagepath", post.getUserProfile().getProfileImagePath());
 				tempMap.put("displayName",post.getUserProfile().getDisplayName());
 				tempMap.put("shareCount", post.getShareCount());
 				
@@ -205,6 +206,7 @@ public class PostServiceImpl implements PostService {
 						postShared.put("imagePath", toShare.getImagePath());
 						postShared.put("content", toShare.getContent());
 						postShared.put("userId", toShare.getUserProfile().getUserAccount().getId());
+						postShared.put("profileImagePath", toShare.getUserProfile().getProfileImagePath());
 						
 						tempMap.put("sharedPost", postShared);
 					}else {

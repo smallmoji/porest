@@ -7,7 +7,7 @@ import Home from '../home/home';
 export default class AppRouter extends React.Component{
   render(){
     return(
-      <Router>
+      <Router> 
         <Switch>
           <Route path="/login" exact component={Login} />
           <PrivateRoute exact path="/home" component={Home}/>

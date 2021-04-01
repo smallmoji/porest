@@ -122,7 +122,8 @@ class FriendsTab extends React.Component{
               if(item.friendship === "not friends"){
                 return <ListItem className={classes.listItem} key={item.key}>
                   <ListItemAvatar>
-                    <Avatar></Avatar>
+                     <Avatar src={"../../../../public/media/PROFILE/" + item.user.id + "/" + 
+                      item.profileImagePath}>{item.user.firstName.substring(0,1)}</Avatar>
                   </ListItemAvatar>
                   <div className="d-flex justify-content-between w-100">
                     <div>
@@ -130,7 +131,7 @@ class FriendsTab extends React.Component{
                         {item.user.firstName} {item.user.lastName}
                       </Typography>
                       <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                        {item.user.email}
+                        @{item.displayName}
                       </Typography>
                       <Typography variant="subtitle2" color="inherit">
                         {item.about ? item.about : "This person didn't bother to write something about themself."}
@@ -142,6 +143,8 @@ class FriendsTab extends React.Component{
                   </div>
                 </ListItem>
                 }
+
+                return null;
             })}
           </List>
 
@@ -166,7 +169,8 @@ class FriendsTab extends React.Component{
                 if(item.friendship === "friends"){
                   return <ListItem className={classes.listItem} key={item.key}>
                     <ListItemAvatar>
-                      <Avatar></Avatar>
+                      <Avatar src={"../../../../public/media/PROFILE/" + item.user.id + "/" + 
+                      item.profileImagePath}>{item.user.firstName.substring(0,1)}</Avatar>
                     </ListItemAvatar>
                     <div className="d-flex justify-content-between w-100">
                       <div>
@@ -174,7 +178,7 @@ class FriendsTab extends React.Component{
                           {item.user.firstName} {item.user.lastName}
                         </Typography>
                         <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                          {item.user.email}
+                          @{item.displayName}
                         </Typography>
                       </div>
                       <div>
@@ -183,6 +187,8 @@ class FriendsTab extends React.Component{
                     </div>
                   </ListItem>
                   }
+
+                  return null;
               })}
             </List>
 
@@ -205,7 +211,9 @@ class FriendsTab extends React.Component{
                   if(item.friendship === "sent request"){
                     return <ListItem className={classes.listItem} key={item.key}>
                       <ListItemAvatar>
-                        <Avatar></Avatar>
+                        <Avatar 
+                          src={"../../../../public/media/PROFILE/" 
+                          + item.user.id + "/" + item.profileImagePath}>{item.user.firstName.substring(0,1)}</Avatar>
                       </ListItemAvatar>
                       <div className="d-flex justify-content-between w-100">
                         <div>
@@ -213,7 +221,7 @@ class FriendsTab extends React.Component{
                             {item.user.firstName} {item.user.lastName}
                           </Typography>
                           <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                            {item.user.email}
+                           @{item.displayName}
                           </Typography>
                         </div>
                         <div>
@@ -222,6 +230,7 @@ class FriendsTab extends React.Component{
                       </div>
                     </ListItem>
                     }
+                    return null;
                 })}
               </List>
             </div>

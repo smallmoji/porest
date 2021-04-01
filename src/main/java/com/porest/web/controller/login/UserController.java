@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.porest.web.service.user.UserService;
 
@@ -68,5 +69,14 @@ public class UserController {
 	@RequestMapping("getOtherUsers")
 	public HashMap<String, Object> getOtherUsers(@RequestParam("userId")long userId){
 		return userService.getOtherUsers(userId);
+	}
+	
+	@RequestMapping("updateUserProfile")
+	public HashMap<String, Object> getOtherUsers(
+			@RequestParam("userId")long userId,
+			@RequestParam("displayName") String displayName,
+			@RequestParam(name="about", required=false) String about,
+			@RequestParam(name="profileImage", required=false) MultipartFile image){
+		return userService.updateUserProfile(userId, displayName, about, image);
 	}
 }

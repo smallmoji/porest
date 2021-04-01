@@ -113,12 +113,21 @@ class Home extends React.Component{
     this.getSuggestedUsers();
   }
 
-  getUser(){
+  getUser(id){
     const that = this;
+
+    let userId = 0;
+
+    if(id){
+      userId = id;
+    }else{
+      userId = this.state.id;
+    }
+
     $.ajax({
       url:"getUserById",
       data: {
-        id: this.state.id
+        id: userId
       },
       success: function(response) {
         if(response.result === "success"){
@@ -175,7 +184,6 @@ class Home extends React.Component{
   }
 
   handleBottomnavChange(e,newValue){
-    let pageText = e.target;
     this.setState({currTabpanel: newValue});
   }
 
@@ -265,7 +273,10 @@ class Home extends React.Component{
                   <button onClick={(e)=>{this.setState({accountMenuAnchorEl: e.target})}} className="sidebar-profile-badge">
                     
                     <div className="d-flex">
-                      <Avatar className="mr-2"></Avatar>
+                      <Avatar  
+                        src={"../../../../public/media/PROFILE/" + this.state.id + "/" + 
+            this.state.userProfile.profileImagePath} 
+                        className="mr-2"></Avatar>
                       <div className="text-left">
                         <Typography variant="subtitle2" color="inherit" style={{fontWeight:"bolder"}}>
                           {this.state.user.firstName}
@@ -298,12 +309,13 @@ class Home extends React.Component{
                 </Typography>
               </Toolbar>
             </AppBar>
-
+      
             <TabPanel value={this.state.currTabpanel} index={0}>
-              <HomeTab userId={this.state.id}/>
+              <HomeTab userId={this.state.id} profilePath={"../../../../public/media/PROFILE/" + this.state.id + "/" + 
+            this.state.userProfile.profileImagePath}/>
             </TabPanel>
             <TabPanel value={this.state.currTabpanel} index={1}>
-              <ProfileTab/>
+              <ProfileTab userId={this.state.id} resetHome={this.getUser.bind(this)}/>
             </TabPanel>
             <TabPanel value={this.state.currTabpanel} index={2}>
               <FriendsTab userId={this.state.id} resetSuggested={this.getSuggestedUsers.bind(this)} isSuggested={this.state.isSuggestedTab} />
@@ -351,7 +363,8 @@ class Home extends React.Component{
                         if(item.friendship === "not friends" && index < 5){
                           return <ListItem button className={classes.listItem} key={item.key}>
                             <ListItemAvatar>
-                              <Avatar></Avatar>
+                              <Avatar src={"../../../public/media/PROFILE/" + item.user.id + "/" + 
+                      item.profileImagePath}>{item.user.firstName.substring(0,1)}</Avatar>
                             </ListItemAvatar>
                             <div className="d-flex justify-content-between w-100">
                               <div>
@@ -359,12 +372,13 @@ class Home extends React.Component{
                                   {item.user.firstName} {item.user.lastName}
                                 </Typography>
                                 <Typography variant="subtitle2" style={{color:"#7d7d7d"}}>
-                                  {item.user.email}
+                                  @{item.displayName}
                                 </Typography>
                               </div>
                             </div>
                           </ListItem>
                           }
+                          return null;
                       })}
                     </List>
                     <div className="border-top p-3"><Link onClick={()=>{

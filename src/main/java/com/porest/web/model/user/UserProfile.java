@@ -39,6 +39,8 @@ public class UserProfile implements Serializable {
 	
 	private String about;
 	
+	private String profileImagePath;
+	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "requester", cascade = CascadeType.ALL)
     private Set<Friendship> friendRequests;
 
@@ -122,6 +124,14 @@ public class UserProfile implements Serializable {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getProfileImagePath() {
+		return profileImagePath;
+	}
+
+	public void setProfileImagePath(String profileImagePath) {
+		this.profileImagePath = profileImagePath;
 	}
 	
 }
